@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="HandheldFriendly" content="True">
+
+    <title>Chat CSF</title>
+    <link rel="shortcut icon" href="src/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.socket.io/socket.io-1.3.4.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.2.js"></script>
+    <style>
+        body {
+            font-size: 1.125em;
+        }
+        #log {
+            margin-left: 20%;
+            word-wrap: break-word;
+            display:block;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 700px;
+            height: 550px;
+            border: 1px solid rgb(192, 192, 192);
+            padding: 5px;
+            margin-bottom: 5px;
+
+        }
+        #input {
+            margin-left: 20%;
+            width: 600px;
+            height: 40px;
+            font-size: 1.125em;
+        }
+        #send {
+            width: 100px;
+            position: absolute;
+            top: 576px;
+            margin-left: 5px;
+
+        }
+        @media screen and (max-width: 980px) {
+            #log {
+                position: absolute;
+                margin-left: 10%;
+                width: 70%;
+                height: 83%;
+            }
+            #input {
+                position: absolute;
+                margin-left: 10%;
+                width: 60%;
+                top: 88%;
+            }
+            #send {
+                position: absolute;
+                margin-left: 71%;
+                width: 10%;
+                top: 88%;
+            }
+        }
+        @media screen and (max-width: 650px)
+        {
+            #log {
+                margin-left: 0%;
+                width: 95%;
+
+            }
+            #input {
+                margin-left: 0%;
+                width: 75%;
+            }
+            #send {
+                margin-left: 77%;
+                width: 20%;
+                margin-top: 0%;
+            }
+        }
+
+        .in {
+            color: rgb(0, 0, 0);
+        }
+        .out {
+            color: rgb(31, 181, 24);
+        }
+        .time {
+            color: rgb(144, 144, 144);
+            font: 0.8em 'Courier New';
+        }
+        .sys {
+            color: rgb(165, 42, 42);
+        }
+        .user {
+            color: rgb(25, 25, 112);
+        }
+    </style>
+    <script>
+        var strings = {
+            'connected': '[sys][time]%time%[/time]: Вы успешно соединились к сервером как [user]%name%[/user].[/sys]',
+            'userJoined': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] присоединился к чату.[/sys]',
+            'messageSent': '[out][time]%time%[/time]: [user]%name%[/user]: %text%[/out]',
+            'messageReceived': '[in][time]%time%[/time]: [user]%name%[/user]: %text%[/in]',
+            'userSplit': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] покинул чат.[/sys]'
+        };
+        window.onload = function() {
+            // Создаем соединение с сервером; websockets почему-то в Хроме не работают, используем xhr
+
+                socket = io.connect(location.host);
+
+            socket.on('connect', function () {
+                socket.on('message', function (msg) {
+                    // Добавляем в лог сообщение, заменив время, имя и текст на полученные
+                    document.querySelector('#log').innerHTML += strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+                    // Прокручиваем лог в конец
+                    document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
+                });
+                // При нажатии <Enter> или кнопки отправляем текст
+                document.querySelector('#input').onkeypress = function(e) {
+                    if (e.which == '13') {
+                        // Отправляем содержимое input'а, закодированное в escape-последовательность
+                        socket.send(escape(document.querySelector('#input').value));
+                        // Очищаем input
+                        document.querySelector('#input').value = '';
+                    }
+                };
+                document.querySelector('#send').onclick = function() {
+                    socket.send(escape(document.querySelector('#input').value));
+                    document.querySelector('#input').value = '';
+                };
+            });
+        };
+    </script>
+</head>
+<body>
+<div id="log">
+</div>
+<textarea id="input" autofocus></textarea> <input type="submit" id="send" value="Отправить">
+</body>
+</html>
