@@ -1,4 +1,4 @@
-var checkAurh = require("middleware/checkAuth");
+var checkAurh = require("../middleware/checkAuth");
 
 module.exports = function(app) {
   app.get("/", require("./frontpage").get);

@@ -1,7 +1,7 @@
-var User = require("models/user").User;
+var User = require("../models/user").User;
 var async = require("async");
-var HttpError = require("error").HttpError;
-var AuthError = require("error").AuthError;
+var HttpError = require("../error").HttpError;
+var AuthError = require("../error").AuthError;
 
 exports.get = function (req, res) {
     res.render("login");

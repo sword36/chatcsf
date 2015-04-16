@@ -1,11 +1,11 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
-var config = require("config");
-var HttpError = require("error").HttpError;
-var log = require("libs/log")(module);
-var mongoose = require("libs/mongoose");
-var debug = require('debug')("app");
+var config = require("./config");
+var HttpError = require("./error").HttpError;
+var log = require("./libs/log")(module);
+var mongoose = require("./libs/mongoose");
+var debug = require("debug")("app");
 
 var app = express();
 app.engine('ejs', require('ejs-locals'));
@@ -21,7 +21,7 @@ else
 
 app.use(express.bodyParser());
 
-var sessionStore = require("libs/sessionStore");
+var sessionStore = require("./libs/sessionStore");
 var MongoStore = require("connect-mongo")(express);
 app.use(express.cookieParser());
 app.use(express.session({
@@ -30,11 +30,10 @@ app.use(express.session({
   cookie: config.get("session:cookie"),
   store: sessionStore
 }));
-
-app.use(require("middleware/loadUser"));
-app.use(require("middleware/sendHttpError"));
+app.use(require("./middleware/loadUser"));
+app.use(require("./middleware/sendHttpError"));
 app.use(app.router);
-require("routes")(app);
+require("./routes")(app);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -65,5 +64,5 @@ server.listen(config.get('port'), function(){
   log.info('Express server listening on port ' + config.get('port'));
 });
 
-var io = require("socket")(server);
+var io = require("./socket")(server);
 app.set("io", io);

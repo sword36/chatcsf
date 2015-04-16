@@ -1,16 +1,18 @@
-var config = require("config");
-var log = require("libs/log")(module);
+var config = require("../config");
+var log = require("../libs/log")(module);
 var connect = require("connect");
 var async = require("async");
 var cookie = require("cookie");
-var sessionStore = require("libs/sessionStore");
-var HttpError = require("error").HttpError;
-var User = require("models/user").User;
+var sessionStore = require("../libs/sessionStore");
+var HttpError = require("../error").HttpError;
+var User = require("../models/user").User;
 
 function LoadSession(sid, callback) {
     sessionStore.load(sid, function(err, session) {
         if (arguments.length == 0)
             return callback(null, null);
+        else if (err)
+            return callback(err);
         else
             return callback(null, session);
     });
