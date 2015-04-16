@@ -1,0 +1,79 @@
+<% layout("layout/page")%>
+<% block("title", "Chat")%>
+
+<!--<script src = "vendor/bower_components/socket.io-client/socket.io.js"></script> -->
+
+<script src = "/socket.io/socket.io.js"></script>
+<div id="room">
+    <ul></ul>
+    <form>
+        <input class="form-control" autocomplete="off" autofocus placeholder="Сообщение...">
+    </form>
+</div>
+
+<script>
+    var socket = io.connect('', {
+        reconnect: false,
+        transports: [
+                'websocket',
+                'flashsocket',
+                'htmlfile',
+                'xhr-polling',
+                'jsonp-polling'
+            ]
+
+    });
+
+    var form = $("#room form");
+    var ul = $("#room ul");
+
+    function printMessage(message) {
+        $("<li>", {text:message}).appendTo(ul);
+    }
+    function printStatus(message) {
+        $("<li>", {text:message}).appendTo(ul);
+    }
+    function sendMessage()
+    {
+        var input = $(this).find(":input");
+        var text = input.val();
+        input.val("");
+        socket.emit("message", text, function() {
+            printMessage("I: " + text);
+        });
+        return false;
+    }
+
+    socket.on("message", function(username, text) {
+        printMessage(username + ": " + text);
+    })
+            .on("connect", function() {
+                printStatus("Connected");
+                form.on("submit", sendMessage);
+                var input = $(this).find(":input");
+                input.prop("disabled", false);
+            })
+            .on("disconnect", function() {
+                printStatus("Disconnect");
+                var input = $(this).find(":input");
+                form.off("submit", sendMessage);
+                input.prop("disabled", true);
+                setTimeout(reconnect, 500);
+            })
+            .on("join", function(username) {
+                printStatus(username + " join chat");
+            })
+            .on("leave", function(username) {
+                printStatus(username + " leave chat");
+            })
+            .on("logout", function() {
+                location.href = "/";
+            })
+    function reconnect() {
+        socket.once("error", function() {
+            setTimeout(reconnect, 500);
+        });
+        socket.socket.connect();
+    }
+
+</script>
