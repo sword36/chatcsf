@@ -8,6 +8,7 @@ var mongoose = require("./libs/mongoose");
 var debug = require("debug")("app");
 
 var app = express();
+app.set('port', (process.env.PORT || 3000));
 app.engine('ejs', require('ejs-locals'));
 
 app.set('views', __dirname + '/views');
@@ -60,8 +61,8 @@ app.use(function(err, req, res, next) {
 
 
 var server = http.createServer(app);
-server.listen(config.get('port'), function(){
-  log.info('Express server listening on port ' + config.get('port'));
+server.listen(app.get('port'), function(){
+  log.info('Express server listening on port ' + app.get('port'));
 });
 
 var io = require("./socket")(server);
