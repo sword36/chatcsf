@@ -1,7 +1,7 @@
 {
   "name": "chatcsf",
   "version": "0.0.1",
-  "private": true,
+  "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
@@ -19,7 +19,8 @@
     "mongoose": "4.0.1",
     "nconf": "0.7.1",
     "socket.io": "0.9.16",
-    "winston": "0.9.0"
+    "winston": "0.9.0",
+    "debug": "*"
   },
   "engines": {
     "node": "0.10.x"
@@ -28,7 +29,6 @@
     "type": "git",
     "url": "https://github.com/sword36/chatcsf"
   },
-  "main": "app.js",
   "devDependencies": {},
   "keywords": [
     "chat"
