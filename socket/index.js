@@ -73,7 +73,9 @@ module.exports = function(server) {
             callback(err);
         })
     });
-    io.set("origins", "localhost:*");
+    //io.set("origins", "localhost:*");
+    io.set("origins", "https://mysterious-island-7447.herokuapp.com:*");
+
 
     io.sockets.on("session:reload", function(sid) {
         var clients = io.sockets.clients();

@@ -50,7 +50,6 @@ app.use(function(err, req, res, next) {
       errorHandler(err, req, res, next);
     } else
     {
-      log.error(err);
       err = new HttpError(500);
       res.sendHttpError(err);
     }
