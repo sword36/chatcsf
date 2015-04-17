@@ -2,15 +2,50 @@
 <% block("title", "Chat")%>
 
 <!--<script src = "vendor/bower_components/socket.io-client/socket.io.js"></script> -->
+<style>
+    .btn-default {
+        margin-top: 5px;
+    }
+    .log {
+        padding-bottom: 5px;
+        display:block;
+        z-index: 5;
+        overflow: auto;
+        height: 350px;
+
+        word-wrap: break-word;
+
+    }
+    @media screen and (max-width: 980px) {
+        .log {
+            height: 300px;
+        }
+    }
+    @media screen and (max-width: 650px)
+    {
+        .log {
+            height: 200px;
+        }
+    }
+    @media screen and (max-width: 500px)
+    {
+        .log {
+            height: 150px;
+        }
+    }
+</style>
 
 <script src = "/socket.io/socket.io.js"></script>
 <div id="room">
-    <ul></ul>
+    <div class="form-group">
+        <div class="well log" id="log">
+        </div>
+    </div>
     <form>
-        <input class="form-control" autocomplete="off" autofocus placeholder="Сообщение...">
+        <textarea class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
+        <button onclick="sendMessage()" type="button" class="btn btn-default">Отправить</button>
     </form>
 </div>
-
 <script>
     var socket = io.connect('', {
         reconnect: false,
@@ -26,16 +61,18 @@
 
     var form = $("#room form");
     var ul = $("#room ul");
+    var input = $("#text");
 
     function printMessage(message) {
-        $("<li>", {text:message}).appendTo(ul);
+        $("<span>", {html:message + "<br>"}).appendTo($("#log"));
+        document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
     function printStatus(message) {
-        $("<li>", {text:message}).appendTo(ul);
+        $("<span>", {html:message + "<br>"}).appendTo($("#log"));
+        document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
     function sendMessage()
     {
-        var input = $(this).find(":input");
         var text = input.val();
         input.val("");
         socket.emit("message", text, function() {
@@ -43,19 +80,24 @@
         });
         return false;
     }
+    function sendEnter(e) {
+        if (e.which == '13') {
+            sendMessage();
+        }
+    }
 
     socket.on("message", function(username, text) {
         printMessage(username + ": " + text);
     })
             .on("connect", function() {
-                printStatus("Connected");
+                printStatus("Вы подключились к чату");
                 form.on("submit", sendMessage);
-                var input = $(this).find(":input");
+                input.on("keypress", sendEnter(e));
                 input.prop("disabled", false);
             })
             .on("disconnect", function() {
                 printStatus("Disconnect");
-                var input = $(this).find(":input");
+                input.off("keypress", sendEnter(e));
                 form.off("submit", sendMessage);
                 input.prop("disabled", true);
                 setTimeout(reconnect, 500);
@@ -68,7 +110,7 @@
             })
             .on("logout", function() {
                 location.href = "/";
-            })
+            });
     function reconnect() {
         socket.once("error", function() {
             setTimeout(reconnect, 500);
