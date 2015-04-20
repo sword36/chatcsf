@@ -33,6 +33,23 @@
             height: 150px;
         }
     }
+
+    .in {
+        color: rgb(0, 0, 0);
+    }
+    .out {
+        color: rgb(31, 181, 24);
+    }
+    .time {
+        color: rgb(144, 144, 144);
+        font: 0.8em 'Courier New';
+    }
+    .sys {
+        color: rgb(165, 42, 42);
+    }
+    .user {
+        color: rgb(25, 25, 112);
+    }
 </style>
 
 <script src = "/socket.io/socket.io.js"></script>
@@ -43,7 +60,7 @@
     </div>
     <form>
         <textarea class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
-        <button onclick="sendMessage()" type="button" class="btn btn-default">Отправить</button>
+        <button onclick="sendMessage()" type="button" class="btn btn-default id="butSend">Отправить</button>
     </form>
 </div>
 <script>
@@ -59,54 +76,55 @@
 
     });
 
+    var strings = {
+        'connected': '[sys][time]%time%[/time]: Вы успешно соединились к сервером как [user]%name%[/user].[/sys]',
+        'userJoined': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] присоединился к чату.[/sys]',
+        'messageSent': '[out][time]%time%[/time]: [user]%name%[/user]: %text%[/out]',
+        'messageReceived': '[in][time]%time%[/time]: [user]%name%[/user]: %text%[/in]',
+        'userSplit': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] покинул чат.[/sys]'
+    };
+
     var form = $("#room form");
     var ul = $("#room ul");
     var input = $("#text");
+    var btn = $("#btnSend");
 
-    function printMessage(message) {
-        $("<span>", {html:message + "<br>"}).appendTo($("#log"));
-        document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
-    }
-    function printStatus(message) {
-        $("<span>", {html:message + "<br>"}).appendTo($("#log"));
+    function printMessage(msg) {
+        $("<span>", {html:strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
+                .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
+                .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>'}).appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
     function sendMessage()
     {
-        var text = input.val();
+        var text = escape(input.val());
         input.val("");
-        socket.emit("message", text, function() {
-            printMessage("I: " + text);
-        });
+        socket.emit("message", text);
         return false;
     }
-    function sendEnter(e) {
-        if (e.which == '13') {
+    function sendEnter(event) {
+        if (event.which == '13') {
+            event.preventDefault();
             sendMessage();
         }
     }
 
-    socket.on("message", function(username, text) {
-        printMessage(username + ": " + text);
-    })
+
+    socket.on("message", function(msg) {
+                printMessage(msg);
+            })
             .on("connect", function() {
-                printStatus("Вы подключились к чату");
+                console.log("connect");
+                input.bind("keypress", function(event) {sendEnter(event)});
                 form.on("submit", sendMessage);
-                input.on("keypress", sendEnter(e));
-                input.prop("disabled", false);
+                btn.prop("disabled", false);
             })
             .on("disconnect", function() {
-                printStatus("Disconnect");
-                input.off("keypress", sendEnter(e));
+                console.log("disconnect");
+                input.unbind("keypress", function(event) {sendEnter(event)});
                 form.off("submit", sendMessage);
-                input.prop("disabled", true);
+                btn.prop("disabled", true);
                 setTimeout(reconnect, 500);
-            })
-            .on("join", function(username) {
-                printStatus(username + " join chat");
-            })
-            .on("leave", function(username) {
-                printStatus(username + " leave chat");
             })
             .on("logout", function() {
                 location.href = "/";

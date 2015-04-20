@@ -62,7 +62,6 @@ module.exports = function(server) {
                 callback(null);
             }
         ], function(err) {
-            console.log(err);
             if (!err)
             {
                 return callback(null, true);
@@ -73,8 +72,8 @@ module.exports = function(server) {
             callback(err);
         })
     });
-    //io.set("origins", "localhost:*");
-    io.set("origins", "https://mysterious-island-7447.herokuapp.com:*");
+    io.set("origins", "localhost:*");
+    //io.set("origins", "https://mysterious-island-7447.herokuapp.com:*");
 
 
     io.sockets.on("session:reload", function(sid) {
@@ -101,16 +100,22 @@ module.exports = function(server) {
 
     io.sockets.on("connection", function (socket) {
         var username = socket.handshake.user.get('username');
+        var time = (new Date()).toTimeString().substr(0, 8);
 
-        socket.broadcast.emit("join", username);
+        socket.json.send({'event': 'connected', 'name':username, 'time':time});
+        socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
-        socket.on("message", function (text, cb) {
-            socket.broadcast.emit("message", username, text);
-            cb && cb();
+        socket.on("message", function (msg) {
+            var time = (new Date).toTimeString().substr(0,8);
+
+
+            socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
+            socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
         });
 
         socket.on("disconnect", function() {
-            socket.broadcast.emit("leave", username);
+            var time = (new Date()).toTimeString().substr(0, 8);
+            io.sockets.json.send({'event':'userSplit', 'name':username, 'time':time});
         });
     });
     return io;
