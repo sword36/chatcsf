@@ -73,7 +73,7 @@ module.exports = function(server) {
         })
     });
     //io.set("origins", "localhost:*");
-    io.set("origins", "https://mysterious-island-7447.herokuapp.com:*");
+    io.set("origins", "http://www.chatcsf.ru:*");
 
 
     io.sockets.on("session:reload", function(sid) {
