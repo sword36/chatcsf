@@ -100,20 +100,20 @@ module.exports = function(server) {
 
     io.sockets.on("connection", function (socket) {
         var username = socket.handshake.user.get('username');
-        var time = ((new Date()).getHours() + 3).toString() +":" + (new Date()).getMinutes();
+        var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
 
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
         socket.on("message", function (msg) {
-            var time = ((new Date()).getHours() + 3).toString() +":" + (new Date()).getMinutes();
+            var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
 
             socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
             socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
         });
 
         socket.on("disconnect", function() {
-            var time = ((new Date()).getHours() + 3).toString() +":" + (new Date()).getMinutes();
+            var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
             io.sockets.json.send({'event':'userSplit', 'name':username, 'time':time});
         });
     });
