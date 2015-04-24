@@ -59,7 +59,7 @@
         </div>
     </div>
     <form>
-        <textarea maxlength="1024"class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
+        <textarea class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
         <button onclick="sendMessage()" type="button" class="btn btn-default id="butSend">Отправить</button>
     </form>
 </div>
@@ -97,23 +97,18 @@
     }
     function sendMessage()
     {
-        var re =/^\s+$/;
-        if (input.val().length == 0 || input.val().toString().match(re) !== null)
-            return false;
         var text = escape(input.val());
         input.val("");
         socket.emit("message", text);
         return false;
     }
     function sendEnter(event) {
-        if (event.which == '13' && !event.shiftKey) {
-            if (event.which )
+        if (event.which == '13') {
             event.preventDefault();
             sendMessage();
         }
     }
-    function checkMaxSize(event) {
-    }
+
 
     socket.on("message", function(msg) {
                 printMessage(msg);
@@ -121,7 +116,6 @@
             .on("connect", function() {
                 console.log("connect");
                 input.bind("keypress", function(event) {sendEnter(event)});
-                //input.bind('input propertychange', function(event) {checkMaxSize(event)});
                 form.on("submit", sendMessage);
                 btn.prop("disabled", false);
             })

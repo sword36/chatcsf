@@ -19,8 +19,8 @@ function LoadSession(sid, callback) {
 }
 
 function LoadUser(session, callback) {
-    if (!session || !session.user) {                //AXTUNG
-        log.debug("Session %s anonymous", session);
+    if (!session.user) {
+        log.debug("Session %s anonymous", session.id);
         return callback(null, null);
     }
 
@@ -72,8 +72,8 @@ module.exports = function(server) {
             callback(err);
         })
     });
-    io.set("origins", "localhost:*");
-    //io.set("origins", "http://www.chatcsf.ru:*");
+    //io.set("origins", "localhost:*");
+    io.set("origins", "http://www.chatcsf.ru:*");
 
 
     io.sockets.on("session:reload", function(sid) {
@@ -100,20 +100,21 @@ module.exports = function(server) {
 
     io.sockets.on("connection", function (socket) {
         var username = socket.handshake.user.get('username');
-        var time = (new Date()).getHours() +":" + (new Date()).getMinutes();
+        var time = (new Date()).toTimeString().substr(0, 8);
 
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
         socket.on("message", function (msg) {
-            var time = (new Date()).getHours() +":" + (new Date()).getMinutes();
+            var time = (new Date).toTimeString().substr(0,8);
+
 
             socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
             socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
         });
 
         socket.on("disconnect", function() {
-            var time = (new Date()).getHours() +":" + (new Date()).getMinutes();
+            var time = (new Date()).toTimeString().substr(0, 8);
             io.sockets.json.send({'event':'userSplit', 'name':username, 'time':time});
         });
     });
