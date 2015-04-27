@@ -89,10 +89,17 @@
     var input = $("#text");
     var btn = $("#btnSend");
 
-    function printMessage(msg) {
-        $("<span>", {html:strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
-                .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
-                .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>'}).appendTo($("#log"));
+    function setMessage(msg) {
+        if (localStorage.getItem("messages") == null)
+            localStorage['messages'] = "";
+        var text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
+                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
+                        .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+        localStorage['messages'] += text;
+        printMessage(text);
+    }
+    function printMessage(text) {
+        $("<span>", {html: text}).appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
     function sendMessage()
@@ -114,9 +121,24 @@
     }
     function checkMaxSize(event) {
     }
+    $(window).bind("storage", function(e) {
+        //alert(e.key);
+    });
 
     socket.on("message", function(msg) {
-                printMessage(msg);
+                if (msg.event == "connected")
+                {
+                    if (localStorage['saidLogin'] == "false")
+                    {
+                        localStorage['saidLogin'] = "true";
+                        setMessage(msg);
+                    }
+                } else if (msg.event == "userJoined")
+                {
+
+                }
+                else
+                    setMessage(msg);
             })
             .on("connect", function() {
                 console.log("connect");
@@ -124,6 +146,7 @@
                 //input.bind('input propertychange', function(event) {checkMaxSize(event)});
                 form.on("submit", sendMessage);
                 btn.prop("disabled", false);
+                printMessage(localStorage['messages']);
             })
             .on("disconnect", function() {
                 console.log("disconnect");

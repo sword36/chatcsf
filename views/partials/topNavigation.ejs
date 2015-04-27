@@ -16,7 +16,8 @@
     </ul>
     <ul class="nav navbar-nav navbar-right">
         <% if (user) { %>
-        <li><a href="" onclick="$('#f').submit();return false">Выйти </a></li>
+        <li><a href="" onclick="window.localStorage.clear(); window.localStorage.setItem('saidLogin', 'false');
+                                $('#f').submit();return false">Выйти </a></li>
         <% } else { %>
         <li><a href="/login">Войти </a></li>
         <% } %>

@@ -27,6 +27,7 @@
 </form>
 
 <script>
+    $(function () {localStorage.setItem("saidLogin", 'false')})
     $(document.forms['login-form']).on('submit', function() {
         var form = $(this);
         $('.error', form).html('');
@@ -41,6 +42,7 @@
             statusCode: {
                 200: function() {
                     form.html("Вы вошли в сайт").addClass('alert-success');
+
                     window.location.href = "/chat";
                 },
                 403: function(jqXHR) {
