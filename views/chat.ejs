@@ -125,17 +125,46 @@
         //alert(e.key);
     });
 
+    function checkUserSplit(msg) {
+        if (localStorage.getItem(msg.name) != "online")
+        {
+            localStorage.removeItem(msg.name);
+            setMessage(msg);
+        }
+    }
+
     socket.on("message", function(msg) {
                 if (msg.event == "connected")
                 {
                     if (localStorage['saidLogin'] == "false")
                     {
                         localStorage['saidLogin'] = "true";
+                        localStorage.setItem("__MY_NAME__", msg.name);
                         setMessage(msg);
                     }
                 } else if (msg.event == "userJoined")
                 {
+                    if (localStorage.getItem("__MY_NAME__") == msg.name)
+                    {
 
+                    } else if (localStorage.getItem(msg.name) == null)
+                    {
+                        localStorage.setItem(msg.name, "online");
+                        setMessage(msg);
+                    }
+                    else {
+                        localStorage.setItem(msg.name, "online");
+                    }
+                } else if (msg.event == "userSplit")
+                {
+                    if (localStorage.getItem("__MY_NAME__") == msg.name)
+                    {
+
+                    } else
+                    {
+                        localStorage.setItem(msg.name, "offline");
+                        setTimeout(function() {checkUserSplit(msg);}, 6000);
+                    }
                 }
                 else
                     setMessage(msg);
