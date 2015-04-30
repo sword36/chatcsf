@@ -72,8 +72,8 @@ module.exports = function(server) {
             callback(err);
         })
     });
-    //io.set("origins", "localhost:*");
-    io.set("origins", "http://www.chatcsf.ru:*");
+    io.set("origins", "localhost:*");
+    //io.set("origins", "http://www.chatcsf.ru:*");
 
 
     io.sockets.on("session:reload", function(sid) {
@@ -98,22 +98,33 @@ module.exports = function(server) {
         });
     });
 
+    function getNowTime()
+    {
+        var h = (((new Date()).getHours() + 3)%24).toString();
+        var m = (new Date()).getMinutes();
+        if (h.length == 1)
+            h = "0" + h;
+        if (m.length == 1)
+            m = "0" + m;
+        var t = h + ":" + m;
+        return t;
+
+    }
     io.sockets.on("connection", function (socket) {
         var username = socket.handshake.user.get('username');
-        var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
+        var time = getNowTime();
 
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
         socket.on("message", function (msg) {
-            var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
-
+            var time = getNowTime();
             socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
             socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
         });
 
         socket.on("disconnect", function() {
-            var time = (((new Date()).getHours() + 3)%24).toString() +":" + (new Date()).getMinutes();
+            var time = getNowTime();
             io.sockets.json.send({'event':'userSplit', 'name':username, 'time':time});
         });
     });
