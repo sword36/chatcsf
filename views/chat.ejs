@@ -61,6 +61,8 @@
     <form>
         <textarea maxlength="1024"class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
         <button onclick="sendMessage()" type="button" class="btn btn-default id="butSend">Отправить</button>
+        <button onclick="clearHistory()" type="button" class="btn btn-default id="butClear">Очистить</button>
+
     </form>
 </div>
 <script>
@@ -89,6 +91,29 @@
     var input = $("#text");
     var btn = $("#btnSend");
 
+    /*$(document).ready(function ()
+    {
+        $("a, input").click(function ()
+        {
+            window.onbeforeunload = null;
+        });
+        $("form").submit(function ()
+        {
+            window.onbeforeunload = null;
+        });
+    });
+    $(window).bind('beforeunload', function(event){
+       // event.returnValue = "ODFSFJ";
+        return "ffffff";
+    });*/
+    function clearScreen()
+    {
+        $("#log").html("");
+    }
+    function clearHistory() {
+        localStorage.setItem("messages", "");
+        clearScreen();
+    }
     function setMessage(msg) {
         if (localStorage.getItem("messages") == null)
             localStorage['messages'] = "";
@@ -128,8 +153,15 @@
     function checkUserSplit(msg) {
         if (localStorage.getItem(msg.name) != "online")
         {
-            localStorage.removeItem(msg.name);
-            setMessage(msg);
+            var count = parseInt(localStorage.getItem(msg.name + "Count"));
+            count--;
+            if (count == 0) {
+                localStorage.removeItem(msg.name);
+                localStorage.removeItem(msg.name + "Count");
+                setMessage(msg);
+            } else {
+                localStorage.setItem(msg.name + "Count", count);
+            }
         }
     }
 
@@ -150,10 +182,14 @@
                     } else if (localStorage.getItem(msg.name) == null)
                     {
                         localStorage.setItem(msg.name, "online");
+                        localStorage.setItem(msg.name + "Count", "1")
                         setMessage(msg);
                     }
                     else {
                         localStorage.setItem(msg.name, "online");
+                        var count = parseInt(localStorage.getItem(msg.name + "Count"));
+                        count++;
+                        localStorage.setItem(msg.name + "Count", count);
                     }
                 } else if (msg.event == "userSplit")
                 {
@@ -163,7 +199,7 @@
                     } else
                     {
                         localStorage.setItem(msg.name, "offline");
-                        setTimeout(function() {checkUserSplit(msg);}, 6000);
+                        setTimeout(function() {checkUserSplit(msg);}, 4000);
                     }
                 }
                 else

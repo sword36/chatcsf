@@ -20,6 +20,28 @@
         ]
 
     });
+    function setMessageLoc (msg)
+    {
+        var text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
+                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
+                        .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+        $("<span>", {html: text}).appendTo($("#log"));
+        localStorage['messages'] += text;
+    }
+    function checkUserSplit(msg) {
+        if (localStorage.getItem(msg.name) != "online")
+        {
+            var count = parseInt(localStorage.getItem(msg.name + "Count"));
+            count--;
+            if (count == 0) {
+                localStorage.removeItem(msg.name);
+                localStorage.removeItem(msg.name + "Count");
+                setMessageLoc(msg);
+            } else {
+                localStorage.setItem(msg.name + "Count", count);
+            }
+        }
+    }
     socket.on("message", function(msg) {
         if (msg.event == "connected")
         {
@@ -27,11 +49,34 @@
             {
                 return;
             }
-        }
-        var text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
-                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
-                        .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
-        $("<span>", {html: text}).appendTo($("#log"));
-        localStorage['messages'] += text;
+        } else if (msg.event == "userJoined")
+        {
+            if (localStorage.getItem("__MY_NAME__") == msg.name)
+            {
+
+            } else if (localStorage.getItem(msg.name) == null)
+            {
+                localStorage.setItem(msg.name, "online");
+                localStorage.setItem(msg.name + "Count", "1")
+                setMessageLoc(msg);
+            }
+            else {
+                localStorage.setItem(msg.name, "online");
+                var count = parseInt(localStorage.getItem(msg.name + "Count"));
+                count++;
+                localStorage.setItem(msg.name + "Count", count);
+            }
+        } else if (msg.event == "userSplit")
+        {
+            if (localStorage.getItem("__MY_NAME__") == msg.name)
+            {
+
+            } else
+            {
+                localStorage.setItem(msg.name, "offline");
+                setTimeout(function() {checkUserSplit(msg);}, 6000);
+            }
+        } else setMessageLoc(msg);
+
     })
 </script>
