@@ -82,13 +82,13 @@
     });
 
     var strings = {
-        'connected': '[sys][time]%time%[/time]: Вы успешно соединились к сервером как [user]%name%[/user].[/sys]',
-        'userJoined': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] присоединился к чату.[/sys]',
-        'messageSent': '[out][time]%time%[/time]: [user]%name%[/user]: %text%[/out]',
-        'messageSentPrivate': '[priv][time]%time%[/time]: [user]%name%[/user]: %text%[/priv]',
-        'messageReceived': '[in][time]%time%[/time]: [user]%name%[/user]: %text%[/in]',
-        'messageReceivedPrivate': '[priv][time]%time%[/time]: [user]%name%[/user]: %text%[/priv]',
-        'userSplit': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] покинул чат.[/sys]'
+        'connected': '[sys][time]%time%[/time] Вы успешно соединились к сервером как [user]%name%[/user].[/sys]',
+        'userJoined': '[sys][time]%time%[/time] Пользователь [user]%name%[/user] присоединился к чату.[/sys]',
+        'messageSent': '[out][time]%time%[/time] [user]%name%[/user]: %text%[/out]',
+        'messageSentPrivate': '[priv][time]%time%[/time] [user]%name%[/user] -> [user]%recipient%[/user]: %text%[/priv]',
+        'messageReceived': '[in][time]%time%[/time] [user]%name%[/user]: %text%[/in]',
+        'messageReceivedPrivate': '[priv][time]%time%[/time] [user]%name%[/user] -> [user]%recipient%[/user]: %text%[/priv]',
+        'userSplit': '[sys][time]%time%[/time] Пользователь [user]%name%[/user] покинул чат.[/sys]'
     };
 
     var form = $("#room form");
@@ -119,15 +119,22 @@
         localStorage.setItem("messages", "");
         clearScreen();
     }
+    function getName() {
+        var str = "[" + $(this).html() + "]" + input.val();
+        input.val(str);
+    }
+    $("#log").delegate(".user", "click", getName);
+
     function setMessage(msg) {
         if (localStorage.getItem("messages") == null)
             localStorage['messages'] = "";
         var text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
-                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name)
+                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
                         .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
         localStorage['messages'] += text;
         printMessage(text);
     }
+
     function printMessage(text) {
         $("<span>", {html: text}).appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
@@ -223,7 +230,6 @@
                 {
                     if ((msg.recipient == localStorage.getItem("__MY_NAME__")) || msg.name == localStorage.getItem("__MY_NAME__"))
                     {
-                        msg.name = msg.name + " -> " + msg.recipient;
                         setMessage(msg);
                     }
                 } else

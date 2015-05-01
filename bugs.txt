@@ -1,8 +1,13 @@
-shif-enter
-double message
+shif-enter  - done
+double message done
 link href
 online list
-logout button
-null message
-maxsize message
+logout button - done
+null message    - done
+maxsize message - done
 flud
+colors fons
+time - done
+localstorage done
+private message done
+click to chat 

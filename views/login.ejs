@@ -8,7 +8,7 @@
         <label for="input-username" class="col-lg-2 control-label">Имя</label>
 
         <div class="col-lg-10">
-            <input name="username" value="" type="text" class="form-control" id="input-username" placeholder="Имя">
+            <input name="username" value="" type="text" class="form-control" id="input-username" placeholder="Имя" autofocus>
         </div>
     </div>
     <div class="form-group">
@@ -27,7 +27,7 @@
 </form>
 
 <script>
-    $(function () {localStorage.setItem("saidLogin", 'false')})
+    $(function () {localStorage.setItem("saidLogin", 'false')});
     $(document.forms['login-form']).on('submit', function() {
         var form = $(this);
         $('.error', form).html('');
