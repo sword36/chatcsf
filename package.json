@@ -21,7 +21,8 @@
     "nconf": "0.7.1",
     "socket.io": "0.9.16",
     "winston": "0.9.0",
-    "debug": "*"
+    "debug": "*",
+    "cookie-parser": "*"
   },
   "engines": {
     "node": "0.10.x"

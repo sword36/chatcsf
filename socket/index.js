@@ -101,7 +101,7 @@ module.exports = function(server) {
     function getNowTime()
     {
         var h = (((new Date()).getHours() + 3)%24).toString();
-        var m = (new Date()).getMinutes();
+        var m = (new Date()).getMinutes().toString();
         if (h.length == 1)
             h = "0" + h;
         if (m.length == 1)
@@ -117,10 +117,16 @@ module.exports = function(server) {
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
-        socket.on("message", function (msg) {
+        socket.on("message", function (msg, recipient) {
             var time = getNowTime();
-            socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
-            socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
+            if (recipient)
+            {
+                socket.json.send({'event': 'messageSentPrivate', 'name':username, 'recipient':recipient, 'text': msg, 'time':time});
+                socket.broadcast.json.send({'event':'messageReceivedPrivate', 'name': username, 'recipient':recipient, 'text': msg, 'time': time});
+            } else {
+                socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
+                socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
+            }
         });
 
         socket.on("disconnect", function() {

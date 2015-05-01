@@ -40,6 +40,9 @@
     .out {
         color: rgb(31, 181, 24);
     }
+    .priv {
+        color: rgb(225, 72, 166);
+    }
     .time {
         color: rgb(144, 144, 144);
         font: 0.8em 'Courier New';
@@ -82,7 +85,9 @@
         'connected': '[sys][time]%time%[/time]: Вы успешно соединились к сервером как [user]%name%[/user].[/sys]',
         'userJoined': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] присоединился к чату.[/sys]',
         'messageSent': '[out][time]%time%[/time]: [user]%name%[/user]: %text%[/out]',
+        'messageSentPrivate': '[priv][time]%time%[/time]: [user]%name%[/user]: %text%[/priv]',
         'messageReceived': '[in][time]%time%[/time]: [user]%name%[/user]: %text%[/in]',
+        'messageReceivedPrivate': '[priv][time]%time%[/time]: [user]%name%[/user]: %text%[/priv]',
         'userSplit': '[sys][time]%time%[/time]: Пользователь [user]%name%[/user] покинул чат.[/sys]'
     };
 
@@ -129,17 +134,29 @@
     }
     function sendMessage()
     {
-        var re =/^\s+$/;
-        if (input.val().length == 0 || input.val().toString().match(re) !== null)
+        var regSpace =/^\s+$/;
+        var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
+        var mes = input.val().toString().trim();
+
+        var users = regUser.exec(mes);
+        var user = null;
+        if (users)
+        {
+            user = users[1];
+            mes = mes.replace(regUser, "");
+        }
+        if (mes.length == 0) //|| mes.match(regSpace) !== null
+        {
+            input.val("");
             return false;
-        var text = escape(input.val());
+        }
+        var text = escape(mes);
         input.val("");
-        socket.emit("message", text);
+        socket.emit("message", text, user);
         return false;
     }
     function sendEnter(event) {
         if (event.which == '13' && !event.shiftKey) {
-            if (event.which )
             event.preventDefault();
             sendMessage();
         }
@@ -202,7 +219,14 @@
                         setTimeout(function() {checkUserSplit(msg);}, 4000);
                     }
                 }
-                else
+                else if (msg.recipient)
+                {
+                    if ((msg.recipient == localStorage.getItem("__MY_NAME__")) || msg.name == localStorage.getItem("__MY_NAME__"))
+                    {
+                        msg.name = msg.name + " -> " + msg.recipient;
+                        setMessage(msg);
+                    }
+                } else
                     setMessage(msg);
             })
             .on("connect", function() {
