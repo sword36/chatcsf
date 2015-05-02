@@ -28,7 +28,6 @@ exports.post = function(req, res, next) {
             } else {
                 return next(err);
             }
-
         }
         req.session.user = user._id;
         res.send({});

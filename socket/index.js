@@ -1,6 +1,7 @@
 var config = require("../config");
 var log = require("../libs/log")(module);
-var connect = require("connect");
+//var connect = require("connect");
+var cookieParser = require('cookie-parser');
 var async = require("async");
 var cookie = require("cookie");
 var sessionStore = require("../libs/sessionStore");
@@ -44,8 +45,11 @@ module.exports = function(server) {
         async.waterfall([
             function(callback) {
                 handshake.cookies = cookie.parse(handshake.headers.cookie || "");
+                console.log(handshake.cookies + "---------1");
                 var sidCookie = handshake.cookies[config.get("session:key")];
-                var sid = connect.utils.parseSignedCookie(sidCookie, config.get("session:secret"));
+                console.log(sidCookie + "-----------2");
+                var sid = cookieParser.signedCookie(sidCookie, config.get("session:secret")); //cookieParser.signedCookie(sidCookie, config.get("session:secret"));
+                console.log(sid + "-----------3");
                 LoadSession(sid, callback);
             },
             function(session, callback) {

@@ -125,6 +125,16 @@
     }
     $("#log").delegate(".user", "click", getName);
 
+    function getUsersOnline() {
+        var usersOnline = "";
+        for (var name in localStorage) {
+            if (localStorage[name] == "online" || localStorage[name] == "offline") {
+                usersOnline += name + " ";
+            }
+        }
+        return usersOnline;
+    }
+
     function setMessage(msg) {
         if (localStorage.getItem("messages") == null)
             localStorage['messages'] = "";

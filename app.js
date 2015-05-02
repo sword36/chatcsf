@@ -1,4 +1,5 @@
 var express = require('express');
+var cookieParser = require('cookie-parser');
 var http = require('http');
 var path = require('path');
 var config = require("./config");
@@ -24,7 +25,8 @@ app.use(express.bodyParser());
 
 var sessionStore = require("./libs/sessionStore");
 var MongoStore = require("connect-mongo")(express);
-app.use(express.cookieParser());
+//app.use(express.cookieParser());
+app.use(cookieParser(config.get("session:secret")));
 app.use(express.session({
   secret: config.get("session:secret"),
   key: config.get("session:key"),
