@@ -88,7 +88,7 @@
         'messageSentPrivate': '[priv][time]%time%[/time] [user]%name%[/user] -> [user]%recipient%[/user]: %text%[/priv]',
         'messageReceived': '[in][time]%time%[/time] [user]%name%[/user]: %text%[/in]',
         'messageReceivedPrivate': '[priv][time]%time%[/time] [user]%name%[/user] -> [user]%recipient%[/user]: %text%[/priv]',
-        'userSplit': '[sys][time]%time%[/time] Пользователь [user]%name%[/user] покинул чат.[/sys]'
+        'userSplit': '[sys][time]%time%[/time] Пользователь [user]%name%[/user] покинул чат.[/sys]',
     };
 
     var form = $("#room form");
@@ -122,14 +122,15 @@
     function getName() {
         var str = "[" + $(this).html() + "]" + input.val();
         input.val(str);
+        input.focus();
     }
     $("#log").delegate(".user", "click", getName);
 
     function getUsersOnline() {
-        var usersOnline = "";
+        var usersOnline = [];
         for (var name in localStorage) {
             if (localStorage[name] == "online" || localStorage[name] == "offline") {
-                usersOnline += name + " ";
+                usersOnline.push(name);
             }
         }
         return usersOnline;
@@ -138,9 +139,14 @@
     function setMessage(msg) {
         if (localStorage.getItem("messages") == null)
             localStorage['messages'] = "";
-        var text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
+        var text;
+        if (msg.event != "onlineUsers")
+            text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
                         .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
                         .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+        else
+            text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
+
         localStorage['messages'] += text;
         printMessage(text);
     }
@@ -149,12 +155,30 @@
         $("<span>", {html: text}).appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
+    function printOnlineUsers() {
+        var message = {event: "onlineUsers"};
+        var str = '[sys]Пользователи в сети: ';
+        var usersOnline = getUsersOnline();
+        for (var i = 0; i < usersOnline.length; i++) {
+            str += "[user]" + usersOnline[i] + "[/user] ";
+        }
+        str += '[/sys]';
+        message.text = str;
+        setMessage(message);
+    }
     function sendMessage()
     {
         var regSpace =/^\s+$/;
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
+        var regOnline = /^\[online\]/i;
         var mes = input.val().toString().trim();
 
+        if (regOnline.test(mes) === true)
+        {
+            input.val("");
+            printOnlineUsers();
+            return false;
+        }
         var users = regUser.exec(mes);
         var user = null;
         if (users)
@@ -204,11 +228,22 @@
                 {
                     if (localStorage['saidLogin'] == "false")
                     {
+                        socket.emit("firstConnect");
+                        setTimeout(printOnlineUsers, 3000);
+
                         localStorage['saidLogin'] = "true";
                         localStorage.setItem("__MY_NAME__", msg.name);
                         setMessage(msg);
                     }
-                } else if (msg.event == "userJoined")
+                }
+                else if (msg.event == "queryName") {
+                    socket.emit("answerName", localStorage.getItem("__MY_NAME__"), msg.sockId);
+                }
+                else if (msg.event == "onlineUser") {
+                    localStorage.setItem(msg.name, "online");
+                    localStorage.setItem(msg.name + "Count", "1");
+                }
+                else if (msg.event == "userJoined")
                 {
                     if (localStorage.getItem("__MY_NAME__") == msg.name)
                     {

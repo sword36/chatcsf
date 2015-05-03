@@ -45,11 +45,11 @@ module.exports = function(server) {
         async.waterfall([
             function(callback) {
                 handshake.cookies = cookie.parse(handshake.headers.cookie || "");
-                console.log(handshake.cookies + "---------1");
+                //console.log(handshake.cookies + "---------1");
                 var sidCookie = handshake.cookies[config.get("session:key")];
-                console.log(sidCookie + "-----------2");
+                //console.log(sidCookie + "-----------2");
                 var sid = cookieParser.signedCookie(sidCookie, config.get("session:secret")); //cookieParser.signedCookie(sidCookie, config.get("session:secret"));
-                console.log(sid + "-----------3");
+                //console.log(sid + "-----------3");
                 LoadSession(sid, callback);
             },
             function(session, callback) {
@@ -114,9 +114,15 @@ module.exports = function(server) {
         return t;
 
     }
+
+    var users = [];
+    var clients = [];
     io.sockets.on("connection", function (socket) {
         var username = socket.handshake.user.get('username');
         var time = getNowTime();
+
+        users[username] = socket.id;
+        clients[socket.id] = socket;
 
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
@@ -133,9 +139,18 @@ module.exports = function(server) {
             }
         });
 
+        socket.on("firstConnect", function() {
+            socket.broadcast.json.send({'event':'queryName', 'sockId':users[username]});
+        });
+        socket.on("answerName", function(name, sockId) {
+            clients[sockId].json.send({'event':'onlineUser', 'name':name});
+        });
+
         socket.on("disconnect", function() {
             var time = getNowTime();
             io.sockets.json.send({'event':'userSplit', 'name':username, 'time':time});
+            delete clients[socket.id];
+            delete users[username];
         });
     });
     return io;
