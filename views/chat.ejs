@@ -231,6 +231,7 @@
                         socket.emit("firstConnect");
                         setTimeout(printOnlineUsers, 3000);
 
+                        localStorage.clear();
                         localStorage['saidLogin'] = "true";
                         localStorage.setItem("__MY_NAME__", msg.name);
                         setMessage(msg);
