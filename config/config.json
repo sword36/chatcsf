@@ -23,7 +23,7 @@
     "cookie": {
       "path": "/",
       "httpOnly": true,
-      "maxAge": 3000
+      "maxAge": 0
     }
   }
 }
