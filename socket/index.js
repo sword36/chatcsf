@@ -127,15 +127,15 @@ module.exports = function(server) {
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
-        socket.on("message", function (msg, recipient) {
+        socket.on("message", function (msg, recipient, url) {
             var time = getNowTime();
             if (recipient)
             {
-                socket.json.send({'event': 'messageSentPrivate', 'name':username, 'recipient':recipient, 'text': msg, 'time':time});
-                socket.broadcast.json.send({'event':'messageReceivedPrivate', 'name': username, 'recipient':recipient, 'text': msg, 'time': time});
+                socket.json.send({'event': 'messageSentPrivate', 'name':username, 'recipient':recipient, 'text': msg, 'time':time, 'url':url});
+                socket.broadcast.json.send({'event':'messageReceivedPrivate', 'name': username, 'recipient':recipient, 'text': msg, 'time': time, 'url':url});
             } else {
-                socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
-                socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
+                socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time, 'url':url});
+                socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time, 'url':url});
             }
         });
 

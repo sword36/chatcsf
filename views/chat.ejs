@@ -12,7 +12,6 @@
         z-index: 5;
         overflow: auto;
         height: 350px;
-
         word-wrap: break-word;
 
     }
@@ -63,7 +62,7 @@
     </div>
     <form>
         <textarea maxlength="1024"class="form-control" rows="2" autocomplete="off" autofocus placeholder="Сообщение..." id="text"></textarea>
-        <button onclick="sendMessage()" type="button" class="btn btn-default id="butSend">Отправить</button>
+        <button onclick="sendMessage(); input.focus()" type="button" class="btn btn-default id="butSend">Отправить</button>
         <button onclick="clearHistory()" type="button" class="btn btn-default id="butClear">Очистить</button>
 
     </form>
@@ -141,10 +140,17 @@
             localStorage['messages'] = "";
         var text;
         if (msg.event != "onlineUsers")
+        {
             text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
-                        .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
-                        .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+                    .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
+                    .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
+            if (msg.url) {
+                text += "<img src=" + msg.url + ">";
+            }
+        }
+
         else
+
             text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
 
         localStorage['messages'] += text;
@@ -152,7 +158,8 @@
     }
 
     function printMessage(text) {
-        $("<span>", {html: text}).appendTo($("#log"));
+        var span = $("<span>", {html: text}).css("display", "block");
+        span.appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
     }
     function printOnlineUsers() {
@@ -171,6 +178,7 @@
         var regSpace =/^\s+$/;
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
         var regOnline = /^\[online\]/i;
+        var regUrl = /((https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?)/ig;
         var mes = input.val().toString().trim();
 
         if (regOnline.test(mes) === true)
@@ -186,14 +194,21 @@
             user = users[1];
             mes = mes.replace(regUser, "");
         }
+        var urls = regUrl.exec(mes);
+        var url = null;
         if (mes.length == 0) //|| mes.match(regSpace) !== null
         {
             input.val("");
             return false;
         }
+        if (urls)
+        {
+            url = urls[1];
+            mes = mes.replace(regUrl, "");
+        }
         var text = escape(mes);
         input.val("");
-        socket.emit("message", text, user);
+        socket.emit("message", text, user, url);
         return false;
     }
     function sendEnter(event) {

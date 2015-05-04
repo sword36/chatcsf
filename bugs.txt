@@ -1,5 +1,5 @@
 shif-enter  - done
-double message done
+double message - done
 link href
 online list - done
 logout button - done
@@ -8,6 +8,6 @@ maxsize message - done
 flud
 colors fons
 time - done
-localstorage done
-private message done
-click to chat done
+localstorage - done
+private message - done
+click to chat - done
