@@ -77,7 +77,7 @@ module.exports = function(server) {
         })
     });
     //io.set("origins", "localhost:*");
-    io.set("origins", "http://www.chatcsf.ru:*");
+     io.set("origins", "http://www.chatcsf.ru:*");
 
 
     io.sockets.on("session:reload", function(sid) {
