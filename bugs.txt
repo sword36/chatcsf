@@ -11,3 +11,5 @@ time - done
 localstorage - done
 private message - done
 click to chat - done
+check nickname-password - done
+img - done?

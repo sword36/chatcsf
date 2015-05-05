@@ -145,12 +145,12 @@
                     .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
                     .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
             if (msg.url) {
-                text += "<img src=" + msg.url + ">";
+
+                text += "<canvas id=" + localStorage.getItem("_IMAGE_ID_") + "></canvas>";
+
             }
         }
-
         else
-
             text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
 
         localStorage['messages'] += text;
@@ -158,9 +158,115 @@
     }
 
     function printMessage(text) {
+        var regUrlG = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?)/igm;
+        var regUrl = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?)/im;
+        var regImg = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|png|gif|jpeg))/igm;
+        var regImgN = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|png|gif|jpeg))/im;
+        //var urls = regUrlG.exec(text);
+        //var urls = null;
+        /*while (urls = regUrlG.exec(text))
+        {
+            var isImg = regImg.test(urls[1]);
+            if (isImg) {
+                //alert("img");
+            }
+            else {
+                text = text.replace(urls[1], "<a href=" + urls[1] + ">" + urls[1] + "</a>");
+            }
+        }*/
+        var urlImg = text.match(regImg);
+        var imgElems;
+
+        if (urlImg) {
+            imgElems = new Array(urlImg.length);
+            var id = localStorage.getItem("_IMAGE_ID_");
+            if (id == null)
+            {
+                localStorage.setItem("_IMAGE_ID_", 0);
+                id = 0;
+            } else
+                id = parseInt(id);
+            //id++;
+            for (var i = 0; i < urlImg.length; i++)
+            {
+                localStorage.setItem("_IMAGE_URL_" + (id + i).toString(), urlImg[i]);
+                text = text.replace(regImgN, "<canvas id='" + "_IMAGE_URL_" + (id + i).toString() + "'></canvas>");
+                imgElems[i] = new Image();
+                //img.id = "_IMAGE_" + (id + i).toString();
+            }
+            id += urlImg.length;
+            localStorage.setItem("_IMAGE_ID_", id);
+        }
+
+        text = text.replace(regUrlG, "<a href=$1  rel='nofollow'>" + '$1' + "</a>");
+        /*if (urls)
+        {
+            //url = urls[1];
+            //alert(urls);alert(urls);
+            for (var i = 0; i < urls.length; i++)
+            {
+                var isImg = regImg.test(urls[i]);
+                if (isImg) {
+                    //alert("img");
+                }
+                else {
+
+                }
+            }
+            //mes = mes.replace(regUrl, "");
+        }*/
+
         var span = $("<span>", {html: text}).css("display", "block");
         span.appendTo($("#log"));
         document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
+
+        var j = parseInt(localStorage.getItem("_IMAGE_ID_"));
+        if (urlImg) {
+            var c = 0;
+            //alert(imgElems.length);
+            var maxWidth = parseInt($("#log").css("width"))/2;
+            var maxHeigth = maxWidth * 2 / 3;
+            alert(maxHeigth);
+
+
+            for (var i = j - urlImg.length; i < j; i++, c++) {
+                //alert(i);
+                imgElems[c].src = localStorage.getItem("_IMAGE_URL_" + i);
+                imgElems[c].onload = (function () {
+                    var _i = i;
+                    return function() {
+                        //alert(_i);
+                        var width = this.width;
+                        var heigth = this.height;
+                        if (width > heigth) {
+                            if (width > maxWidth) {
+                                heigth *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (heigth > maxHeigth) {
+                                width *= maxHeigth / heigth;
+                                heigth = maxHeigth;
+                            }
+                        }
+                        var canvas = document.getElementById("_IMAGE_URL_" + _i);
+                        canvas.width = width;
+                        canvas.height = heigth;
+                        var context = canvas.getContext("2d");
+                        context.drawImage(this, 0, 0, width, heigth);
+                    }
+                })();
+            }
+
+        }
+
+        /*var img = new Image();
+        img.src = url;
+        img.onload = function() {
+            var canvas = document.getElementById(localStorage.getItem("_IMAGE_ID_"));
+            var context = canvas.getContext("2d");
+            context.drawImage(img, 0, 0, 100, 100);
+        };*/
     }
     function printOnlineUsers() {
         var message = {event: "onlineUsers"};
@@ -178,7 +284,6 @@
         var regSpace =/^\s+$/;
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
         var regOnline = /^\[online\]/i;
-        var regUrl = /((https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?)/ig;
         var mes = input.val().toString().trim();
 
         if (regOnline.test(mes) === true)
@@ -194,21 +299,14 @@
             user = users[1];
             mes = mes.replace(regUser, "");
         }
-        var urls = regUrl.exec(mes);
-        var url = null;
         if (mes.length == 0) //|| mes.match(regSpace) !== null
         {
             input.val("");
             return false;
         }
-        if (urls)
-        {
-            url = urls[1];
-            mes = mes.replace(regUrl, "");
-        }
         var text = escape(mes);
         input.val("");
-        socket.emit("message", text, user, url);
+        socket.emit("message", text, user);
         return false;
     }
     function sendEnter(event) {

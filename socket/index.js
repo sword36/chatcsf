@@ -76,8 +76,8 @@ module.exports = function(server) {
             callback(err);
         })
     });
-    //io.set("origins", "localhost:*");
-    io.set("origins", "http://www.chatcsf.ru:*");
+    io.set("origins", "localhost:*");
+    //io.set("origins", "http://www.chatcsf.ru:*");
 
 
     io.sockets.on("session:reload", function(sid) {
@@ -127,15 +127,15 @@ module.exports = function(server) {
         socket.json.send({'event': 'connected', 'name':username, 'time':time});
         socket.broadcast.json.send({'event':'userJoined', 'name': username, 'time': time});
 
-        socket.on("message", function (msg, recipient, url) {
+        socket.on("message", function (msg, recipient) {
             var time = getNowTime();
             if (recipient)
             {
-                socket.json.send({'event': 'messageSentPrivate', 'name':username, 'recipient':recipient, 'text': msg, 'time':time, 'url':url});
-                socket.broadcast.json.send({'event':'messageReceivedPrivate', 'name': username, 'recipient':recipient, 'text': msg, 'time': time, 'url':url});
+                socket.json.send({'event': 'messageSentPrivate', 'name':username, 'recipient':recipient, 'text': msg, 'time':time});
+                socket.broadcast.json.send({'event':'messageReceivedPrivate', 'name': username, 'recipient':recipient, 'text': msg, 'time': time});
             } else {
-                socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time, 'url':url});
-                socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time, 'url':url});
+                socket.json.send({'event': 'messageSent', 'name':username, 'text': msg, 'time':time});
+                socket.broadcast.json.send({'event':'messageReceived', 'name': username, 'text': msg, 'time': time});
             }
         });
 
