@@ -63,7 +63,14 @@
 
     }
 </style>
-
+<script>
+    $(document).ready(function() {
+        var c = getCookie();
+        var hex = c.bgColor;
+        if (hex)
+            $("body").css("backgroundColor", hex);
+    });
+</script>
 <script src = "/socket.io/socket.io.js"></script>
 <div id="room">
     <div class="form-group">
@@ -120,7 +127,7 @@
        // event.returnValue = "ODFSFJ";
         return "ffffff";
     });*/
-    function clearScreen()
+        function clearScreen()
     {
         $("#log").html("");
     }
@@ -149,20 +156,19 @@
         if (localStorage.getItem("messages") == null)
             localStorage['messages'] = "";
         var text;
-        if (msg.event != "onlineUsers")
-        {
+        if (msg.event == "onlineUsers") {
+            text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
+        } else if (msg.event == "helpMessage") {
+            text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
+        }
+        else {
             text = strings[msg.event].replace(/\[([a-z]+)\]/g, '<span class="$1">')
                     .replace(/\[\/[a-z]+\]/g, '</span>').replace(/\%time\%/, msg.time).replace(/\%name\%/, msg.name).replace(/\%recipient\%/, msg.recipient)
                     .replace(/\%text\%/, unescape(msg.text).replace('<', '&lt;').replace('>', '&gt;')) + '<br>';
             if (msg.url) {
-
                 text += "<canvas id=" + localStorage.getItem("_IMAGE_ID_") + "></canvas>";
-
             }
         }
-        else
-            text = msg.text.replace(/\[([a-z]+)\]/g, '<span class="$1">').replace(/\[\/[a-z]+\]/g, '</span>') + '<br>';
-
         localStorage['messages'] += text;
         printMessage(text);
     }
@@ -185,7 +191,6 @@
                 id = 0;
             } else
                 id = parseInt(id);
-            //id++;
             for (var i = 0; i < urlImg.length; i++)
             {
                 localStorage.setItem("_IMAGE_URL_" + (id + i).toString(), urlImg[i]);
@@ -248,21 +253,54 @@
         for (var i = 0; i < usersOnline.length; i++) {
             str += "[user]" + usersOnline[i] + "[/user] ";
         }
+        str += "<br>Введите /help для справки";
         str += '[/sys]';
         message.text = str;
         setMessage(message);
     }
+    function printHelpMessage() {
+        var message = {event: "helpMessage"};
+        var str = "[sys]Возможные команды: /color #AAAAA - изменение цвета фона на заданый<br>" +
+                "/color - изменение цета фона на случайный<br>" +
+                "/online - получение списка пользователей в сети<br>" +
+                "[Вася] Hello world! - приватное сообщение" +
+                "[/sys]";
+        message.text = str;
+        setMessage(message);
+    }
     function changeBg(hex) {
+        if (!hex)
+        {
+            var r = parseInt(Math.random() * 255);
+            var g = parseInt(Math.random() * 255);
+            var b = parseInt(Math.random() * 255);
+            r = r.toString(16);
+            g = g.toString(16);
+            b = b.toString(16);
+            r = (r.length == 1)?("0" + r):r;
+            g = (g.length == 1)?("0" + g):g;
+            b = (b.length == 1)?("0" + b):b;
+
+            hex = "#" + r + g + b;
+        }
         $("body").css("backgroundColor", hex);
+        setCookie("bgColor", hex, 366);
     }
     function sendMessage()
     {
         var regSpace =/^\s+$/;
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
-        var regOnline = /^\[online\]/i;
-        var regColors = /^\[color\]/i;
+        var regOnline = /^\/online/;
+        var regColors = /^\/color/;
+        var regHelp = /^\/help/;
         var regHex = /(\#[\da-f]{6})$/i;
         var mes = input.val().toString().trim();
+
+        if (regHelp.test(mes) === true) {
+            input.val("");
+            printHelpMessage();
+            return false;
+        }
 
         if (regOnline.test(mes) === true)
         {
@@ -275,7 +313,8 @@
             hex = mes.match(regHex);
             if (hex) {
                 changeBg(hex[1]);
-            }
+            } else
+                changeBg(null);
             input.val("");
 
             return false;
@@ -287,7 +326,7 @@
             user = users[1];
             mes = mes.replace(regUser, "");
         }
-        if (mes.length == 0) //|| mes.match(regSpace) !== null
+        if (mes.length == 0)
         {
             input.val("");
             return false;

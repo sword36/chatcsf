@@ -36,6 +36,29 @@
     <%-blocks.footer%>
 </footer>
 <script>
+    function setCookie(name, value, daysToLive) {
+        var cookie = name + "=" + encodeURIComponent(value);
+        if (typeof daysToLive === "number") {
+            cookie += "; max-age=" + (daysToLive * 60 * 60 *24);
+        }
+        document.cookie = cookie;
+    }
+    function getCookie() {
+        var cookies = {};
+        var all = document.cookie;
+        if (all == "")
+            return cookies;
+        var list = all.split("; ");
+        for (var i = 0; i < list.length; i++) {
+            var cookie = list[i];
+            var p = cookie.indexOf("=");
+            var name = cookie.substr(0, p);
+            var value = cookie.substr(p + 1);
+            value = decodeURIComponent(value);
+            cookies[name] = value;
+        }
+        return cookies;
+    }
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)

@@ -1,5 +1,13 @@
 <% layout("layout/page")%>
 <% block("title", "Chat CSF")%>
+<script>
+    $(document).ready(function() {
+        var c = getCookie();
+        var hex = c.bgColor;
+        if (hex)
+            $("body").css("backgroundColor", hex);
+    });
+</script>
 <script src = "/socket.io/socket.io.js"></script>
 <script>
     var strings = {

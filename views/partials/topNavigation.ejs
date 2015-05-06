@@ -6,21 +6,40 @@
         padding-left: 10px;
         padding-right: 10px;
     }
+    .navbar-default .navbar-toggle {
+        border-color: #777;
+    }
+    .navbar-default .navbar-collapse {
+        border-color: rgba(0,0,0,0);
+    }
 </style>
-<nav class="navbar navbar-default" role="navigation">
-    <ul class="nav navbar-nav">
-        <li><a href="/">Главная</a></li>
-        <% if (user) { %>
-        <li><a href="/chat">Чат</a></li>
-        <% } %>
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-        <% if (user) { %>
-        <li><a href="" onclick="window.localStorage.clear(); window.localStorage.setItem('saidLogin', 'false');
-                                $('#f').submit();return false">Выйти </a></li>
-        <% } else { %>
-        <li><a href="/login">Войти </a></li>
-        <% } %>
-    </ul>
+<div class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <span class="navbar-brand" >Chat CSF</span>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">Главная</a></li>
+                <% if (user) { %>
+                <li><a href="/chat">Чат</a></li>
+                <% } %>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <% if (user) { %>
+                <li><a href="" onclick="window.localStorage.clear(); window.localStorage.setItem('saidLogin', 'false');
+                setCookie('bgColor', '0', 0);$('#f').submit();return false">Выйти </a></li>
+                <% } else { %>
+                <li><a href="/login">Войти </a></li>
+                <% } %>
+            </ul>
+        </div>
     <form id="f" method=POST action="/logout"></form>
-</nav>
+    </div>
+</div>
