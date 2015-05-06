@@ -3,6 +3,9 @@
 
 <!--<script src = "vendor/bower_components/socket.io-client/socket.io.js"></script> -->
 <style>
+    A:visited {
+        color: #0000FF;
+    }
     .btn-default {
         margin-top: 5px;
     }
@@ -35,22 +38,29 @@
 
     .in {
         color: rgb(0, 0, 0);
+        vertical-align: top;
     }
     .out {
         color: rgb(31, 181, 24);
+        vertical-align: top;
     }
     .priv {
         color: rgb(225, 72, 166);
+        vertical-align: top;
     }
     .time {
         color: rgb(144, 144, 144);
         font: 0.8em 'Courier New';
+        vertical-align: top;
     }
     .sys {
         color: rgb(165, 42, 42);
+        vertical-align: top;
     }
     .user {
         color: rgb(25, 25, 112);
+        vertical-align: top;
+
     }
 </style>
 
@@ -160,20 +170,9 @@
     function printMessage(text) {
         var regUrlG = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?)/igm;
         var regUrl = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?)/im;
-        var regImg = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|png|gif|jpeg))/igm;
-        var regImgN = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|png|gif|jpeg))/im;
-        //var urls = regUrlG.exec(text);
-        //var urls = null;
-        /*while (urls = regUrlG.exec(text))
-        {
-            var isImg = regImg.test(urls[1]);
-            if (isImg) {
-                //alert("img");
-            }
-            else {
-                text = text.replace(urls[1], "<a href=" + urls[1] + ">" + urls[1] + "</a>");
-            }
-        }*/
+        var regImg = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|jpeg))/igm;
+        var regImgN = /((?:https?:\/\/)?(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.-]*)*\/?(?:jpg|jpeg))/im;
+
         var urlImg = text.match(regImg);
         var imgElems;
 
@@ -192,29 +191,12 @@
                 localStorage.setItem("_IMAGE_URL_" + (id + i).toString(), urlImg[i]);
                 text = text.replace(regImgN, "<canvas id='" + "_IMAGE_URL_" + (id + i).toString() + "'></canvas>");
                 imgElems[i] = new Image();
-                //img.id = "_IMAGE_" + (id + i).toString();
             }
             id += urlImg.length;
             localStorage.setItem("_IMAGE_ID_", id);
         }
 
-        text = text.replace(regUrlG, "<a href=$1  rel='nofollow'>" + '$1' + "</a>");
-        /*if (urls)
-        {
-            //url = urls[1];
-            //alert(urls);alert(urls);
-            for (var i = 0; i < urls.length; i++)
-            {
-                var isImg = regImg.test(urls[i]);
-                if (isImg) {
-                    //alert("img");
-                }
-                else {
-
-                }
-            }
-            //mes = mes.replace(regUrl, "");
-        }*/
+        text = text.replace(regUrlG, "<a href=$1  rel='nofollow' target='_blank'>" + '$1' + "</a>");
 
         var span = $("<span>", {html: text}).css("display", "block");
         span.appendTo($("#log"));
@@ -223,19 +205,14 @@
         var j = parseInt(localStorage.getItem("_IMAGE_ID_"));
         if (urlImg) {
             var c = 0;
-            //alert(imgElems.length);
             var maxWidth = parseInt($("#log").css("width"))/2;
             var maxHeigth = maxWidth * 2 / 3;
-            alert(maxHeigth);
-
 
             for (var i = j - urlImg.length; i < j; i++, c++) {
-                //alert(i);
                 imgElems[c].src = localStorage.getItem("_IMAGE_URL_" + i);
                 imgElems[c].onload = (function () {
                     var _i = i;
                     return function() {
-                        //alert(_i);
                         var width = this.width;
                         var heigth = this.height;
                         if (width > heigth) {
@@ -250,23 +227,19 @@
                             }
                         }
                         var canvas = document.getElementById("_IMAGE_URL_" + _i);
+                        $("#_IMAGE_URL_" + _i).wrap(function() {
+                            return '<a href="' + localStorage.getItem("_IMAGE_URL_" + _i) + '" target="_blank rel="nofollow"></a>';
+                        });
                         canvas.width = width;
                         canvas.height = heigth;
                         var context = canvas.getContext("2d");
                         context.drawImage(this, 0, 0, width, heigth);
+                        document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
                     }
                 })();
             }
-
         }
 
-        /*var img = new Image();
-        img.src = url;
-        img.onload = function() {
-            var canvas = document.getElementById(localStorage.getItem("_IMAGE_ID_"));
-            var context = canvas.getContext("2d");
-            context.drawImage(img, 0, 0, 100, 100);
-        };*/
     }
     function printOnlineUsers() {
         var message = {event: "onlineUsers"};
@@ -279,17 +252,32 @@
         message.text = str;
         setMessage(message);
     }
+    function changeBg(hex) {
+        $("body").css("backgroundColor", hex);
+    }
     function sendMessage()
     {
         var regSpace =/^\s+$/;
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
         var regOnline = /^\[online\]/i;
+        var regColors = /^\[color\]/i;
+        var regHex = /(\#[\da-f]{6})$/i;
         var mes = input.val().toString().trim();
 
         if (regOnline.test(mes) === true)
         {
             input.val("");
             printOnlineUsers();
+            return false;
+        }
+        if (regColors.test(mes) === true) {
+            var hex = null;
+            hex = mes.match(regHex);
+            if (hex) {
+                changeBg(hex[1]);
+            }
+            input.val("");
+
             return false;
         }
         var users = regUser.exec(mes);
