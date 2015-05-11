@@ -264,6 +264,7 @@
                 "/color - изменение цета фона на случайный<br>" +
                 "/online - получение списка пользователей в сети<br>" +
                 "[Вася] Hello world! - приватное сообщение" +
+                "/game - вакум клинер" +
                 "[/sys]";
         message.text = str;
         setMessage(message);
@@ -292,6 +293,7 @@
         var regUser = /^\[([a-zа-яё0-9_]{3,20})\]/i;
         var regOnline = /^\/online/;
         var regColors = /^\/color/;
+        var regGame = /^\/game/;
         var regHelp = /^\/help/;
         var regHex = /(\#[\da-f]{6})$/i;
         var mes = input.val().toString().trim();
@@ -299,6 +301,12 @@
         if (regHelp.test(mes) === true) {
             input.val("");
             printHelpMessage();
+            return false;
+        }
+
+        if (regGame.test(mes) === true) {
+            input.val("");
+            location = "/game";
             return false;
         }
 
