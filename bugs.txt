@@ -1,15 +1,16 @@
 shif-enter  - done
 double message - done
-link href
+link href - done
 online list - done
 logout button - done
 null message    - done
 maxsize message - done
 flud
-colors fons
+colors fons - done
 time - done
 localstorage - done
 private message - done
 click to chat - done
 check nickname-password - done
-img - done?
+img - done
+img on smartphone ?

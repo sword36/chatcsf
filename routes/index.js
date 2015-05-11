@@ -11,4 +11,5 @@ module.exports = function(app) {
 
   app.get("/chat", checkAurh, require("./chat").get);
 
+  app.get("/game", checkAurh, require("./game").get);
 };
