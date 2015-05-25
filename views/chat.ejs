@@ -263,8 +263,9 @@
         var str = "[sys]Возможные команды: /color #AAAAA - изменение цвета фона на заданый<br>" +
                 "/color - изменение цета фона на случайный<br>" +
                 "/online - получение списка пользователей в сети<br>" +
-                "[Вася] Hello world! - приватное сообщение" +
-                "/game - вакум клинер" +
+                "[Вася] Hello world! - приватное сообщение<br>" +
+                "/game - вакум клинер<br>" +
+                 "/caesar - шифр Цезаря"
                 "[/sys]";
         message.text = str;
         setMessage(message);
@@ -287,6 +288,9 @@
         $("body").css("backgroundColor", hex);
         setCookie("bgColor", hex, 366);
     }
+    function startCaesar() {
+
+    }
     function sendMessage()
     {
         var regSpace =/^\s+$/;
@@ -294,6 +298,7 @@
         var regOnline = /^\/online/;
         var regColors = /^\/color/;
         var regGame = /^\/game/;
+        var regCaesar = /^\/caesar/;
         var regHelp = /^\/help/;
         var regHex = /(\#[\da-f]{6})$/i;
         var mes = input.val().toString().trim();
@@ -306,7 +311,8 @@
 
         if (regGame.test(mes) === true) {
             input.val("");
-            location = "/game";
+            //location = "/game";
+            window.open('/game', '_blank');
             return false;
         }
 
@@ -314,6 +320,12 @@
         {
             input.val("");
             printOnlineUsers();
+            return false;
+        }
+        if (regCaesar.test(mes) === true)
+        {
+            input.val("");
+            window.open('/caesar', '_blank');
             return false;
         }
         if (regColors.test(mes) === true) {
